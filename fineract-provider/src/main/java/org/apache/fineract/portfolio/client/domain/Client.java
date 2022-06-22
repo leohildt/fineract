@@ -238,6 +238,9 @@ public final class Client extends AbstractPersistableCustom {
     @Temporal(TemporalType.DATE)
     private Date proposedTransferDate;
 
+    @Column(name = "surname", length = 50, nullable = true)
+    private String surname;
+
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<ClientCollateralManagement> clientCollateralManagements = new HashSet<>();
 
@@ -254,6 +257,7 @@ public final class Client extends AbstractPersistableCustom {
         final String middlename = command.stringValueOfParameterNamed(ClientApiConstants.middlenameParamName);
         final String lastname = command.stringValueOfParameterNamed(ClientApiConstants.lastnameParamName);
         final String fullname = command.stringValueOfParameterNamed(ClientApiConstants.fullnameParamName);
+        final String surname = command.stringValueOfParameterNamed(ClientApiConstants.surnameParamName);
 
         final boolean isStaff = command.booleanPrimitiveValueOfParameterNamed(ClientApiConstants.isStaffParamName);
 
@@ -283,7 +287,7 @@ public final class Client extends AbstractPersistableCustom {
         final Long savingsAccountId = null;
         return new Client(currentUser, status, clientOffice, clientParentGroup, accountNo, firstname, middlename, lastname, fullname,
                 activationDate, officeJoiningDate, externalId, mobileNo, emailAddress, staff, submittedOnDate, savingsProductId,
-                savingsAccountId, dataOfBirth, gender, clientType, clientClassification, legalForm, isStaff);
+                savingsAccountId, dataOfBirth, gender, clientType, clientClassification, legalForm, isStaff, surname);
     }
 
     Client() {
@@ -295,7 +299,7 @@ public final class Client extends AbstractPersistableCustom {
             final LocalDate activationDate, final LocalDate officeJoiningDate, final String externalId, final String mobileNo,
             final String emailAddress, final Staff staff, final LocalDate submittedOnDate, final Long savingsProductId,
             final Long savingsAccountId, final LocalDate dateOfBirth, final CodeValue gender, final CodeValue clientType,
-            final CodeValue clientClassification, final Integer legalForm, final Boolean isStaff) {
+            final CodeValue clientClassification, final Integer legalForm, final Boolean isStaff, final String surname) {
 
         if (StringUtils.isBlank(accountNo)) {
             this.accountNumber = new RandomPasswordGenerator(19).generate();
@@ -361,6 +365,12 @@ public final class Client extends AbstractPersistableCustom {
         if (clientParentGroup != null) {
             this.groups = new HashSet<>();
             this.groups.add(clientParentGroup);
+        }
+
+        if (StringUtils.isNotBlank(surname)) {
+            this.surname = surname.trim();
+        } else {
+            this.surname = null;
         }
 
         this.staff = staff;
@@ -555,6 +565,12 @@ public final class Client extends AbstractPersistableCustom {
             this.fullname = newValue;
         }
 
+        if (command.isChangeInStringParameterNamed(ClientApiConstants.surnameParamName, this.surname)) {
+            final String newValue = command.stringValueOfParameterNamed(ClientApiConstants.surnameParamName);
+            actualChanges.put(ClientApiConstants.surnameParamName, newValue);
+            this.surname = StringUtils.defaultIfEmpty(newValue, null);
+        }
+
         if (command.isChangeInLongParameterNamed(ClientApiConstants.staffIdParamName, staffId())) {
             final Long newValue = command.longValueOfParameterNamed(ClientApiConstants.staffIdParamName);
             actualChanges.put(ClientApiConstants.staffIdParamName, newValue);
@@ -568,11 +584,6 @@ public final class Client extends AbstractPersistableCustom {
         if (command.isChangeInLongParameterNamed(ClientApiConstants.savingsProductIdParamName, savingsProductId())) {
             final Long newValue = command.longValueOfParameterNamed(ClientApiConstants.savingsProductIdParamName);
             actualChanges.put(ClientApiConstants.savingsProductIdParamName, newValue);
-        }
-
-        if (command.isChangeInLongParameterNamed(ClientApiConstants.genderIdParamName, genderId())) {
-            final Long newValue = command.longValueOfParameterNamed(ClientApiConstants.genderIdParamName);
-            actualChanges.put(ClientApiConstants.genderIdParamName, newValue);
         }
 
         if (command.isChangeInLongParameterNamed(ClientApiConstants.clientTypeIdParamName, clientTypeId())) {
@@ -598,6 +609,7 @@ public final class Client extends AbstractPersistableCustom {
                         this.firstname = null;
                         this.lastname = null;
                         this.displayName = null;
+                        this.surname = null;
                     }
                 } else {
                     actualChanges.put(ClientApiConstants.legalFormIdParamName, null);
@@ -663,6 +675,9 @@ public final class Client extends AbstractPersistableCustom {
 
             baseDataValidator.reset().parameter(ClientApiConstants.lastnameParamName).value(this.lastname)
                     .mustBeBlankWhenParameterProvided(ClientApiConstants.fullnameParamName, this.fullname);
+
+            baseDataValidator.reset().parameter(ClientApiConstants.surnameParamName).value(this.surname)
+                    .mustBeBlankWhenParameterProvided(ClientApiConstants.fullnameParamName, this.fullname);
         } else {
 
             baseDataValidator.reset().parameter(ClientApiConstants.firstnameParamName).value(this.firstname).notBlank()
@@ -670,6 +685,8 @@ public final class Client extends AbstractPersistableCustom {
             baseDataValidator.reset().parameter(ClientApiConstants.middlenameParamName).value(this.middlename).ignoreIfNull()
                     .notExceedingLengthOf(50);
             baseDataValidator.reset().parameter(ClientApiConstants.lastnameParamName).value(this.lastname).notBlank()
+                    .notExceedingLengthOf(50);
+            baseDataValidator.reset().parameter(ClientApiConstants.surnameParamName).value(this.surname).ignoreIfNull()
                     .notExceedingLengthOf(50);
         }
     }
@@ -738,6 +755,10 @@ public final class Client extends AbstractPersistableCustom {
 
             if (StringUtils.isNotBlank(this.lastname)) {
                 nameBuilder.append(this.lastname);
+            }
+
+            if (StringUtils.isNotBlank(this.surname)) {
+                nameBuilder.append(this.surname);
             }
 
             if (StringUtils.isNotBlank(this.fullname)) {

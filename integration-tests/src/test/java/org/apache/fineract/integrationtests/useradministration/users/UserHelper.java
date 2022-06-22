@@ -80,13 +80,13 @@ public final class UserHelper {
         return "{ \"username\": \"" + Utils.randomNameGenerator("User_Name_", 3)
                 + "\", \"firstname\": \"Test\", \"lastname\": \"User\", \"email\": \"whatever@mifos.org\","
                 + " \"officeId\": \"1\", \"staffId\": " + "\"" + staffId + "\",\"roles\": [\"" + roleId
-                + "\"], \"sendPasswordToEmail\": false}";
+                + "\"], \"sendPasswordToEmail\": false, \"genderId\": \"1\"}";
     }
 
     private static String getTestCreateUserAsJSON(int roleId, int staffId, String username) {
         return "{ \"username\": \"" + username + "\", \"firstname\": \"Test\", \"lastname\": \"User\", \"email\": \"whatever@mifos.org\","
                 + " \"officeId\": \"1\", \"staffId\": " + "\"" + staffId + "\",\"roles\": [\"" + roleId
-                + "\"], \"sendPasswordToEmail\": false}";
+                + "\"], \"sendPasswordToEmail\": false, \"genderId\": \"1\"}";
     }
 
     private static String getTestUpdateUserAsJSON(String username) {
